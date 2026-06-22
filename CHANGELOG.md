@@ -9,6 +9,13 @@ When cutting a release, add a section here and use it as the release notes:
 
 ## [Unreleased]
 
+### Added
+- **File Properties** comparison viewer — a popover (the ⓘ button in a text or image
+  comparison) comparing A/B file metadata: size, type, dates, permissions, and for images the
+  dimensions, format, and color space, with differing values highlighted.
+- **Collapsible panels** in the repository view — hide the commit / files list or the
+  changed-files list to give the diff more room.
+
 ## [0.1.2] — 2026-06-23
 
 ### Added

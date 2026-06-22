@@ -11,6 +11,7 @@ struct GitChangesetView: View {
     let bLabel: String
 
     @State private var selection: GitChangedFile.ID?
+    @State private var listCollapsed = false
 
     var body: some View {
         if files.isEmpty {
@@ -18,10 +19,33 @@ struct GitChangesetView: View {
                                    description: Text("These two states are identical."))
         } else {
             HSplitView {
-                fileList
+                if !listCollapsed {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("\(files.count) file\(files.count == 1 ? "" : "s")")
+                                .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                            Spacer()
+                            Button { withAnimation(.snappy) { listCollapsed = true } } label: {
+                                Image(systemName: "sidebar.left")
+                            }
+                            .buttonStyle(.borderless).help("Hide files")
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        Divider().opacity(0.4)
+                        fileList
+                    }
                     .frame(minWidth: 180, idealWidth: 280, maxWidth: 360)
+                }
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay(alignment: .topLeading) {
+                        if listCollapsed {
+                            Button { withAnimation(.snappy) { listCollapsed = false } } label: {
+                                Image(systemName: "sidebar.left")
+                            }
+                            .buttonStyle(.borderless).padding(10).help("Show files")
+                        }
+                    }
             }
         }
     }

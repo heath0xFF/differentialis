@@ -18,11 +18,14 @@ struct RepositoryView: View {
     @State private var fileFilter = ""
 
     @State private var showCustom = false
+    @State private var leftCollapsed = false
 
     var body: some View {
         HSplitView {
-            leftPane
-                .frame(minWidth: 240, idealWidth: 320, maxWidth: 460)
+            if !leftCollapsed {
+                leftPane
+                    .frame(minWidth: 240, idealWidth: 320, maxWidth: 460)
+            }
             detailPane
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -189,6 +192,12 @@ struct RepositoryView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .navigation) {
+            Button { withAnimation(.snappy) { leftCollapsed.toggle() } } label: {
+                Image(systemName: "sidebar.left")
+            }
+            .help(leftCollapsed ? "Show list" : "Hide list")
+        }
         ToolbarItemGroup(placement: .primaryAction) {
             Button { revealInFinder() } label: { Image(systemName: "folder") }
                 .help("Reveal in Finder")

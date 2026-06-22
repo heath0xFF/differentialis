@@ -78,6 +78,8 @@ struct TextComparisonView: View {
             ],
             compact: true)
         .fixedSize()
+
+        FilePropertiesButton(a: a, b: b)
     }
 
     // MARK: - Diff scroll

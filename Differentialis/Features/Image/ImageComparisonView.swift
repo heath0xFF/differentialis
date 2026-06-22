@@ -139,6 +139,8 @@ struct ImageComparisonView: View {
             Button { showB.toggle() } label: { Text(showB ? "B" : "A").font(.system(size: 12, weight: .bold)) }
                 .buttonStyle(.borderless)
         }
+
+        FilePropertiesButton(a: a, b: b)
     }
 
     private var infoBar: some View {
