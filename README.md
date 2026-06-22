@@ -1,18 +1,14 @@
-<div align="center">
-
 # Differentialis
-
-**A beautiful, native macOS app for comparing and merging text, images, and folders — with git built in.**
-
-Written in SwiftUI with Apple's Liquid Glass. Zero third-party dependencies.
-
-![Differentialis comparing two Swift files](docs/hero.png)
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2026-black?logo=apple)
 ![Swift](https://img.shields.io/badge/Swift-6-orange?logo=swift)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-</div>
+A native macOS app for comparing and merging text, images, and folders — with git built in.
+
+Written in SwiftUI with Apple's Liquid Glass. Zero third-party dependencies.
+
+![Differentialis comparing two Swift files](docs/hero.png)
 
 ## Features
 
