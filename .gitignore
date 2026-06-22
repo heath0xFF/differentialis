@@ -18,3 +18,7 @@ xcuserdata/
 
 # Local release artifacts (built by scripts/make-dmg.sh)
 /dist/
+
+# Vercel
+site/.vercel/
+.vercel/
