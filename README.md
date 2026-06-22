@@ -15,10 +15,8 @@ Written in SwiftUI with Apple's Liquid Glass. Zero third-party dependencies.
 Grab the latest **`.dmg`** from the [Releases](https://github.com/yennster/differentialis/releases)
 page, open it, and drag **Differentialis** onto **Applications**.
 
-> The build isn't notarized yet, so on first launch right-click the app → **Open**, or clear
-> quarantine once with `xattr -dr com.apple.quarantine /Applications/Differentialis.app`.
-
-Each published release automatically gets a `.dmg` attached by the
+The build is **signed with Developer ID and notarized by Apple**, so it opens without Gatekeeper
+warnings. Each published release automatically gets a signed, notarized `.dmg` attached by the
 [Release DMG workflow](.github/workflows/release.yml) (`macos-26` runner + Xcode 26).
 
 ## Features
