@@ -8,7 +8,7 @@ A native macOS app for comparing and merging text, images, and folders — with 
 
 Written in SwiftUI with Apple's Liquid Glass. Zero third-party dependencies.
 
-![Differentialis comparing two Swift files](docs/hero.png)
+![Differentialis comparing two Swift files](docs/hero2.png)
 
 ## Features
 
