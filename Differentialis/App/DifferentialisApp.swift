@@ -12,6 +12,7 @@ struct DifferentialisApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified(showsTitle: false))
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("New Text Comparison…") { model.chooseFiles(mode: .text) }
