@@ -18,6 +18,7 @@ page, open it, and drag **Differentialis** onto **Applications**.
 The build is **signed with Developer ID and notarized by Apple**, so it opens without Gatekeeper
 warnings. Each published release automatically gets a signed, notarized `.dmg` attached by the
 [Release DMG workflow](.github/workflows/release.yml) (`macos-26` runner + Xcode 26).
+Release history lives in the [changelog](CHANGELOG.md).
 
 ## Features
 
@@ -108,4 +109,4 @@ Covers the Myers algorithm, line diff (including intra-line highlights), and thr
 
 ## License
 
-[MIT](LICENSE) © Jenny Plunkett
+[MIT](LICENSE) © Jenny Speelman
