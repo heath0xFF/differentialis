@@ -19,7 +19,7 @@ struct GitChangesetView: View {
         } else {
             HSplitView {
                 fileList
-                    .frame(minWidth: 220, idealWidth: 300, maxWidth: 440)
+                    .frame(minWidth: 180, idealWidth: 280, maxWidth: 360)
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }

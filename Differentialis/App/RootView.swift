@@ -2,16 +2,18 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
         @Bindable var model = model
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 240, ideal: 270, max: 340)
         } detail: {
             detail
                 .diffCanvasBackground()
         }
+        .navigationSplitViewStyle(.balanced)
         .task { model.openFromLaunchArguments() }
         .alert("Something went wrong",
                isPresented: Binding(get: { model.errorMessage != nil },
@@ -107,6 +109,8 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
+        .background(Theme.canvasTop)
         .safeAreaInset(edge: .top) { sidebarHeader }
     }
 

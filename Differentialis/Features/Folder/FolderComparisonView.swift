@@ -31,7 +31,7 @@ struct FolderComparisonView: View {
             } else {
                 HSplitView {
                     fileList
-                        .frame(minWidth: 240, idealWidth: 320, maxWidth: 460)
+                        .frame(minWidth: 200, idealWidth: 300, maxWidth: 400)
                     detail
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

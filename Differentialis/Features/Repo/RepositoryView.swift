@@ -14,7 +14,7 @@ struct RepositoryView: View {
     var body: some View {
         HSplitView {
             commitList
-                .frame(minWidth: 280, idealWidth: 340, maxWidth: 480)
+                .frame(minWidth: 240, idealWidth: 320, maxWidth: 460)
             commitDetail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
