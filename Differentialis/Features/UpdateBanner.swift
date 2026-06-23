@@ -13,7 +13,7 @@ struct UpdateBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Update available — \(update.version)")
                     .font(.system(size: 13, weight: .semibold))
-                Text(firstLine(update.notes))
+                Text(summary(update.notes))
                     .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 12)
@@ -34,9 +34,17 @@ struct UpdateBanner: View {
         .padding(.horizontal, 16).padding(.bottom, 16)
     }
 
-    private func firstLine(_ notes: String) -> String {
-        let line = notes.split(whereSeparator: \.isNewline).first.map(String.init)?
-            .trimmingCharacters(in: .whitespaces) ?? ""
-        return line.isEmpty ? "A new version is ready to download." : line
+    /// First meaningful line of the release notes, skipping markdown headers/rules
+    /// and stripping list markers and emphasis.
+    private func summary(_ notes: String) -> String {
+        for raw in notes.split(whereSeparator: \.isNewline) {
+            var line = raw.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty || line.hasPrefix("#") || line.hasPrefix("---") { continue }
+            if line.hasPrefix("- ") || line.hasPrefix("* ") { line.removeFirst(2) }
+            line = line.replacingOccurrences(of: "**", with: "")
+                       .replacingOccurrences(of: "`", with: "")
+            if !line.isEmpty { return line }
+        }
+        return "A new version is ready to install."
     }
 }

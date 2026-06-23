@@ -25,6 +25,9 @@ struct KeyboardShortcutsView: View {
             Shortcut(label: "One-Up", keys: ["⌘", "2"]),
             Shortcut(label: "Split", keys: ["⌘", "3"]),
             Shortcut(label: "Difference", keys: ["⌘", "4"]),
+            Shortcut(label: "Swap A / B side", keys: ["⇧", "⌘", "S"]),
+            Shortcut(label: "Switch A / B (One-Up)", keys: ["Space"]),
+            Shortcut(label: "Pick A / B side", keys: ["←", "→"]),
         ]),
     ]
 

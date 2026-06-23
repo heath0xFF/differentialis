@@ -16,9 +16,15 @@ When cutting a release, add a section here and use it as the release notes:
 - **Collapsible panels** in the repository view — hide the commit / files list or the
   changed-files list (matching collapse controls in each panel header) to give the diff more room.
 - **Changelog** link in the Help menu.
+- One-Up image mode: a clear **A | B** selector plus keyboard control — Space toggles, ← / →
+  pick a side, ⇧⌘S swaps.
 
 ### Changed
 - Bundle identifier migrated to `app.differentialis.*` to match the differentialis.app domain.
+
+### Fixed
+- The update banner summarizes the first real line of the release notes instead of showing a
+  raw `## What's new` heading.
 
 ## [0.1.2] — 2026-06-23
 

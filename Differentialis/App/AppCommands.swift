@@ -8,6 +8,7 @@ struct DiffCommandActions {
     var prevChange: (() -> Void)? = nil
     var toggleLayout: (() -> Void)? = nil
     var setImageMode: ((Int) -> Void)? = nil
+    var swapAB: (() -> Void)? = nil
 }
 
 struct DiffCommandsKey: FocusedValueKey {
@@ -54,6 +55,9 @@ struct AppMenuCommands: Commands {
             Button("Image: Difference") { diff?.setImageMode?(4) }
                 .keyboardShortcut("4", modifiers: .command)
                 .disabled(diff?.setImageMode == nil)
+            Button("Swap A / B Side") { diff?.swapAB?() }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+                .disabled(diff?.swapAB == nil)
         }
 
         CommandGroup(replacing: .help) {

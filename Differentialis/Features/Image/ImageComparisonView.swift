@@ -46,7 +46,13 @@ struct ImageComparisonView: View {
             infoBar
         }
         .focusedSceneValue(\.diffCommands, DiffCommandActions(
-            setImageMode: { mode = ImageMode(rawValue: $0) ?? mode }))
+            setImageMode: { mode = ImageMode(rawValue: $0) ?? mode },
+            swapAB: { showB.toggle() }))
+        .focusable()
+        .focusEffectDisabled()
+        .onKeyPress(.space) { showB.toggle(); return .handled }
+        .onKeyPress(.leftArrow) { showB = false; return .handled }
+        .onKeyPress(.rightArrow) { showB = true; return .handled }
         .onReceive(blinkTimer) { _ in if blinking { showB.toggle() } }
         .task(id: taskKey) { await load() }
     }
@@ -130,14 +136,18 @@ struct ImageComparisonView: View {
             .help("Toggle split orientation")
         }
         if mode == .oneUp {
+            GlassSegmentedControl(
+                selection: $showB,
+                options: [.init(value: false, title: "A"), .init(value: true, title: "B")],
+                compact: true)
+            .fixedSize()
+            .help("Show A or B  ·  Space toggles, ← / → pick a side")
             Button { blinking.toggle() } label: {
                 Image(systemName: blinking ? "pause.fill" : "play.fill")
                     .foregroundStyle(blinking ? Theme.brand : .secondary)
             }
             .buttonStyle(.borderless)
             .help("Auto-switch A/B (blink)")
-            Button { showB.toggle() } label: { Text(showB ? "B" : "A").font(.system(size: 12, weight: .bold)) }
-                .buttonStyle(.borderless)
         }
 
         FilePropertiesButton(a: a, b: b)
