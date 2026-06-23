@@ -9,6 +9,16 @@ When cutting a release, add a section here and use it as the release notes:
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-06-23
+
+### Fixed
+- **Fixed a crash when viewing a diff or running a custom comparison** (e.g. a commit hash against
+  a branch). Building a file comparison resolved the repository root by shelling out to git from
+  inside a SwiftUI view body; on the main thread that re-entered the render loop and aborted. The
+  repository root is now resolved once, off the main thread, so diffs render without crashing.
+- **The Commits ⇄ Files toggle is fully clickable again.** Only the small icon was hit-testable, so
+  switching modes often did nothing; the whole control (and the panel collapse buttons) now respond.
+
 ## [0.1.4] — 2026-06-23
 
 ### Fixed
