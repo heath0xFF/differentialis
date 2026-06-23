@@ -9,6 +9,17 @@ When cutting a release, add a section here and use it as the release notes:
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-06-23
+
+### Fixed
+- **Repository view no longer crashes or freezes.** Git commands — and large text diffs and image
+  decoding — now run off the main thread instead of blocking it. Previously, opening a repository or
+  loading a big diff could hang the UI or crash with a segmentation fault.
+- **Sidebar no longer clips its contents.** The project sidebar is now a fixed-width column that the
+  repository view's panes can't squeeze, so the logo and labels never get cut off the window's left edge.
+- **Repository layout fixes** — the changed-files panel collapses again to give the diff more room, and
+  the working-copy / "no working changes" states fill their panes instead of floating to the center.
+
 ## [0.1.3] — 2026-06-23
 
 ### Added
