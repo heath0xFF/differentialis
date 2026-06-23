@@ -101,6 +101,8 @@ struct RepositoryView: View {
                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
             Button { withAnimation(.snappy) { leftCollapsed = true } } label: {
                 Image(systemName: "sidebar.left")
+                    .frame(width: 24, height: 22)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless).help("Hide list")
         }
@@ -113,6 +115,9 @@ struct RepositoryView: View {
                 .foregroundStyle(mode == m ? .white : .secondary)
                 .frame(width: 32, height: 22)
                 .background(mode == m ? Theme.brand : .clear, in: Capsule())
+                // Without this the inactive button's .clear background isn't hit-tested, so only the
+                // tiny icon is clickable and switching modes feels broken. Make the whole pill tappable.
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain).help(help)
     }
@@ -192,6 +197,8 @@ struct RepositoryView: View {
                 Spacer()
                 Button { withAnimation(.snappy) { changesetFilesCollapsed = true } } label: {
                     Image(systemName: "sidebar.left")
+                        .frame(width: 24, height: 22)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless).help("Hide files")
             }
@@ -282,12 +289,11 @@ struct RepositoryView: View {
     // MARK: - Actions
 
     private func revealInFinder() {
-        NSWorkspace.shared.activateFileViewerSelecting([(try? repo.root()) ?? repo.url])
+        NSWorkspace.shared.activateFileViewerSelecting([repo.url])
     }
 
     private func openTerminal() {
-        let url = (try? repo.root()) ?? repo.url
-        NSWorkspace.shared.open([url], withApplicationAt: URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app"),
+        NSWorkspace.shared.open([repo.url], withApplicationAt: URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app"),
                                 configuration: NSWorkspace.OpenConfiguration())
     }
 

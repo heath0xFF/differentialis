@@ -29,6 +29,8 @@ struct GitChangesetView: View {
                             Spacer()
                             Button { withAnimation(.snappy) { listCollapsed = true } } label: {
                                 Image(systemName: "sidebar.left")
+                                    .frame(width: 24, height: 22)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.borderless).help("Hide files")
                         }

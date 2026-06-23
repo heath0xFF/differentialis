@@ -1,7 +1,12 @@
 import Foundation
 
 extension GitRepository {
-    private var rootURL: URL { (try? root()) ?? url }
+    // `makeComparison` is called from SwiftUI view bodies, so this must NEVER shell out to git:
+    // `Process.waitUntilExit` pumps the run loop, re-enters the SwiftUI update cycle mid-layout
+    // and crashes (AttributeGraph precondition / RootGeometry recursion). A `GitRepository` is
+    // always created with its working-tree root as `url` (see AppModel.openRepository), so the
+    // root is just `url` — no subprocess needed.
+    private var rootURL: URL { url }
 
     private func source(_ side: GitSide, path: String, label: String) -> ComparisonSource {
         switch side {

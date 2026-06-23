@@ -107,12 +107,14 @@ final class AppModel {
             errorMessage = "“\(url.lastPathComponent)” is not a git repository."
             return
         }
-        let repository = GitRepository(url: url)
+        let probe = GitRepository(url: url)
         let info = await offMain { () -> (name: String, refs: [GitRef], root: URL) in
-            let root = (try? repository.root()) ?? url
-            return (root.lastPathComponent, (try? repository.refs()) ?? [], root)
+            let root = (try? probe.root()) ?? url
+            return (root.lastPathComponent, (try? probe.refs()) ?? [], root)
         }
-        repo = repository
+        // Store the repository keyed on its working-tree root, so `rootURL` (used by makeComparison
+        // in view bodies) is just `url` and never has to run git on the main thread.
+        repo = GitRepository(url: info.root)
         repoName = info.name
         repoRefs = info.refs
         openRepoPath = info.root.standardizedFileURL.path
@@ -163,15 +165,17 @@ final class AppModel {
     }
 
     private func openSavedImpl(_ saved: SavedComparison) async {
-        let repository = GitRepository(url: saved.repoURL)
+        let probe = GitRepository(url: saved.repoURL)
         guard await offMain({ GitRepository.isRepository(saved.repoURL) }) else {
             errorMessage = "The repository for “\(saved.name)” could not be found."
             return
         }
         let info = await offMain { () -> (name: String, refs: [GitRef], root: URL) in
-            let root = (try? repository.root()) ?? saved.repoURL
-            return (root.lastPathComponent, (try? repository.refs()) ?? [], root)
+            let root = (try? probe.root()) ?? saved.repoURL
+            return (root.lastPathComponent, (try? probe.refs()) ?? [], root)
         }
+        // Keyed on the working-tree root so makeComparison's rootURL never runs git (see GitChangeset).
+        let repository = GitRepository(url: info.root)
         repo = repository
         repoName = info.name
         repoRefs = info.refs

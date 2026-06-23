@@ -39,19 +39,11 @@ struct ImageComparisonView: View {
     private let blinkTimer = Timer.publish(every: 0.55, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        // The mode switcher in the PathBar is fixed-size, which otherwise gives this view a
-        // wide hard minimum width. Inside the multi-pane repository layout that minimum would
-        // be forced onto the neighbouring commit / file-list panes, squeezing them. Pinning the
-        // content to the width GeometryReader is offered lets this pane shrink instead (the diff
-        // scales down / the toolbar clips) rather than stealing width from its siblings.
-        GeometryReader { geo in
-            VStack(spacing: 0) {
-                PathBar(a: a, b: b) { toolbar }
-                Divider().opacity(0.4)
-                canvas
-                infoBar
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
+        VStack(spacing: 0) {
+            PathBar(a: a, b: b) { toolbar }
+            Divider().opacity(0.4)
+            canvas
+            infoBar
         }
         .focusedSceneValue(\.diffCommands, DiffCommandActions(
             setImageMode: { mode = ImageMode(rawValue: $0) ?? mode },
