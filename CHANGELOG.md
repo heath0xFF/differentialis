@@ -9,6 +9,8 @@ When cutting a release, add a section here and use it as the release notes:
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-06-23
+
 ### Added
 - **File Properties** comparison viewer — a popover (the ⓘ button in a text or image
   comparison) comparing A/B file metadata: size, type, dates, permissions, and for images the
@@ -56,7 +58,8 @@ When cutting a release, add a section here and use it as the release notes:
 - Native SwiftUI + Liquid Glass, **zero third-party dependencies**.
 - GitHub Actions release workflow that builds and attaches a drag-to-Applications `.dmg`.
 
-[Unreleased]: https://github.com/yennster/differentialis/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/yennster/differentialis/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/yennster/differentialis/releases/tag/v0.1.3
 [0.1.2]: https://github.com/yennster/differentialis/releases/tag/v0.1.2
 [0.1.1]: https://github.com/yennster/differentialis/releases/tag/v0.1.1
 [0.1.0]: https://github.com/yennster/differentialis/releases/tag/v0.1.0
