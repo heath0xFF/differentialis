@@ -93,6 +93,7 @@ struct FolderComparisonView: View {
         } else {
             ContentUnavailableView("Select a file", systemImage: "sidebar.left",
                                    description: Text("Choose a file to see its differences."))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 

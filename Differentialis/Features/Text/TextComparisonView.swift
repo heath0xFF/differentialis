@@ -53,6 +53,7 @@ struct TextComparisonView: View {
             Text("No differences between A and B.")
         }
         .foregroundStyle(Theme.added)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Toolbar
@@ -146,16 +147,20 @@ struct TextComparisonView: View {
     private func load() async {
         document = nil
         loadError = nil
-        do {
-            let aText = try a.loadText()
-            let bText = try b.loadText()
-            let doc = LineDiff.document(aText, bText)
+        let a = a, b = b
+        // Reading the bytes (possibly a git blob) and the Myers + character-level diff are heavy
+        // for large files — run them off the main actor so the UI never freezes mid-diff.
+        let outcome = await offMain { () -> (DiffDocument?, String?) in
+            do { return (LineDiff.document(try a.loadText(), try b.loadText()), nil) }
+            catch { return (nil, error.localizedDescription) }
+        }
+        if let doc = outcome.0 {
             document = doc
             changeIDs = doc.allRows.filter { $0.kind.isChange }.map(\.id)
             currentChange = -1
             currentChangeID = nil
-        } catch {
-            loadError = error.localizedDescription
+        } else {
+            loadError = outcome.1
         }
     }
 }

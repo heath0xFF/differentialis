@@ -11,6 +11,7 @@ struct RepositoryView: View {
     @State private var commits: [GitCommit] = []
     @State private var selectedCommit: GitCommit.ID?
     @State private var changeset: ResolvedChangeset?
+    @State private var selectedChangesetFile: GitChangedFile.ID?
     @State private var loading = true
 
     @State private var workingFiles: [GitChangedFile] = []
@@ -19,37 +20,71 @@ struct RepositoryView: View {
 
     @State private var showCustom = false
     @State private var leftCollapsed = false
+    @State private var changesetFilesCollapsed = false
 
     var body: some View {
-        HSplitView {
-            if leftCollapsed {
-                CollapsedRail { withAnimation(.snappy) { leftCollapsed = false } }
-            } else {
-                leftPane
-                    .frame(minWidth: 240, idealWidth: 320, maxWidth: 460)
+        Group {
+            switch mode {
+            case .commits: commitsLayout
+            case .files: filesLayout
             }
-            detailPane
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .toolbar { toolbarContent }
         .task(id: repo.url.path) {
             await loadCommits()
-            loadWorkingFiles()
+            await loadWorkingFiles()
         }
-        .onChange(of: selectedCommit) { _, _ in loadChangeset() }
-        .onChange(of: mode) { _, newMode in if newMode == .files { loadWorkingFiles() } }
+        .onChange(of: selectedCommit) { _, _ in Task { await loadChangeset() } }
+        .onChange(of: mode) { _, newMode in if newMode == .files { Task { await loadWorkingFiles() } } }
     }
 
-    // MARK: - Left pane (commits or files)
+    // MARK: - Layout
+    //
+    // Commits mode is a single three-pane split — commit list · changed files · diff — rather than
+    // a commit-list HSplitView wrapping the changeset's own HSplitView. Collapsing that two-level
+    // nesting into one NSSplitView keeps the layout's width distribution predictable (nested
+    // NSSplitViews fight over width and resize nondeterministically). The window-left sidebar is
+    // kept clip-free separately, by RootView's fixed-width sidebar pane.
 
-    private var leftPane: some View {
-        VStack(spacing: 0) {
-            leftHeader
-            Divider().opacity(0.4)
-            switch mode {
-            case .commits: commitListContent
-            case .files: filesListContent
+    @ViewBuilder
+    private var commitsLayout: some View {
+        HSplitView {
+            listColumn { commitListContent }
+            if changesetFilesCollapsed {
+                CollapsedRail { withAnimation(.snappy) { changesetFilesCollapsed = false } }
+            } else {
+                changesetFilesColumn
+                    .frame(minWidth: 180, idealWidth: 280, maxWidth: 360, maxHeight: .infinity)
             }
+            changesetDiffColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var filesLayout: some View {
+        HSplitView {
+            listColumn { filesListContent }
+            workingFileDetail
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    // The leading list column (commits or working files), or a thin rail when collapsed.
+    @ViewBuilder
+    private func listColumn<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        if leftCollapsed {
+            CollapsedRail { withAnimation(.snappy) { leftCollapsed = false } }
+        } else {
+            VStack(spacing: 0) {
+                leftHeader
+                Divider().opacity(0.4)
+                // Fill the remaining height so the header stays pinned to the top even when the
+                // content is a short empty state (otherwise the whole column floats to centre).
+                content()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(minWidth: 240, idealWidth: 320, maxWidth: 460, maxHeight: .infinity)
         }
     }
 
@@ -146,23 +181,53 @@ struct RepositoryView: View {
 
     // MARK: - Detail
 
-    @ViewBuilder
-    private var detailPane: some View {
-        switch mode {
-        case .commits: commitDetail
-        case .files: workingFileDetail
+    // The selected commit's changed files (middle pane in commits mode), with a header that can
+    // collapse the pane to a rail to give the diff more room.
+    private var changesetFilesColumn: some View {
+        let count = changeset?.files.count ?? 0
+        return VStack(spacing: 0) {
+            HStack {
+                Text("\(count) file\(count == 1 ? "" : "s")")
+                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                Spacer()
+                Button { withAnimation(.snappy) { changesetFilesCollapsed = true } } label: {
+                    Image(systemName: "sidebar.left")
+                }
+                .buttonStyle(.borderless).help("Hide files")
+            }
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            Divider().opacity(0.4)
+            changesetFilesList
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
     @ViewBuilder
-    private var commitDetail: some View {
-        if let commit = commits.first(where: { $0.id == selectedCommit }), let changeset {
+    private var changesetFilesList: some View {
+        if let changeset, !changeset.files.isEmpty {
+            List(changeset.files, selection: $selectedChangesetFile) { file in
+                fileRow(file).tag(file.id)
+            }
+            .listStyle(.inset)
+        } else if loading {
+            ProgressView()
+        } else {
+            Color.clear
+        }
+    }
+
+    // The selected file's diff, under a header for the selected commit (trailing pane in commits mode).
+    @ViewBuilder
+    private var changesetDiffColumn: some View {
+        if let commit = commits.first(where: { $0.id == selectedCommit }), let changeset,
+           let file = changeset.files.first(where: { $0.id == selectedChangesetFile }) ?? changeset.files.first {
             VStack(spacing: 0) {
                 commitHeader(commit)
                 Divider().opacity(0.4)
-                GitChangesetView(repo: repo, files: changeset.files,
-                                 a: changeset.a, aLabel: changeset.aLabel,
-                                 b: changeset.b, bLabel: changeset.bLabel)
+                ComparisonDetailView(comparison: repo.makeComparison(
+                    file: file, a: changeset.a, aLabel: changeset.aLabel,
+                    b: changeset.b, bLabel: changeset.bLabel))
+                    .id(file.id)
             }
         } else {
             ContentUnavailableView("Select a commit", systemImage: "point.3.filled.connected.trianglepath.dotted",
@@ -226,28 +291,42 @@ struct RepositoryView: View {
                                 configuration: NSWorkspace.OpenConfiguration())
     }
 
+    // Git drives the `git` binary synchronously (Process.waitUntilExit), which pumps
+    // the run loop. Running that on the main actor from inside a SwiftUI update cycle
+    // re-enters the update driver and crashes (EXC_BAD_ACCESS), so every git call below
+    // is hopped off the main thread via Task.detached and only the results land back on it.
+
     private func loadCommits() async {
         loading = true
-        commits = (try? repo.commits(limit: 300)) ?? []
+        let repo = repo
+        commits = await Task.detached { (try? repo.commits(limit: 300)) ?? [] }.value
         selectedCommit = commits.first?.id
         loading = false
-        loadChangeset()
+        await loadChangeset()
     }
 
-    private func loadChangeset() {
-        guard let commit = commits.first(where: { $0.id == selectedCommit }) else { changeset = nil; return }
-        if let result = try? repo.changeset(forCommit: commit) {
+    private func loadChangeset() async {
+        guard let commit = commits.first(where: { $0.id == selectedCommit }) else {
+            changeset = nil; selectedChangesetFile = nil; return
+        }
+        let repo = repo
+        let result = await Task.detached { try? repo.changeset(forCommit: commit) }.value
+        if let result {
             changeset = ResolvedChangeset(files: result.files, a: result.a, aLabel: result.aLabel,
                                           b: result.b, bLabel: result.bLabel)
+            selectedChangesetFile = result.files.first?.id
         } else {
             changeset = nil
+            selectedChangesetFile = nil
         }
     }
 
-    private func loadWorkingFiles() {
-        workingFiles = (try? repo.workingChanges(scope: .all)) ?? []
-        if selectedFile == nil || !workingFiles.contains(where: { $0.id == selectedFile }) {
-            selectedFile = workingFiles.first?.id
+    private func loadWorkingFiles() async {
+        let repo = repo
+        let files = await Task.detached { (try? repo.workingChanges(scope: .all)) ?? [] }.value
+        workingFiles = files
+        if selectedFile == nil || !files.contains(where: { $0.id == selectedFile }) {
+            selectedFile = files.first?.id
         }
     }
 }

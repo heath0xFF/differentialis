@@ -3,20 +3,41 @@ import AppKit
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var sidebarVisible = true
 
     var body: some View {
         @Bindable var model = model
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            SidebarView()
-                .navigationSplitViewColumnWidth(min: 240, ideal: 270, max: 340)
-        } detail: {
-            detail
-                .diffCanvasBackground()
+        // A plain fixed-width sidebar instead of NavigationSplitView. NavigationSplitView's
+        // balanced/prominent styles squeeze the sidebar below its minimum width (clipping its
+        // content off the window's left edge) when the multi-pane repository detail competes
+        // for width — and no column-width setting overrides that. A fixed HStack pane can never
+        // be squeezed. The detail is wrapped in a NavigationStack so its `.toolbar` items still
+        // populate the window toolbar; that toolbar also hosts the sidebar toggle.
+        HStack(spacing: 0) {
+            if sidebarVisible {
+                SidebarView()
+                    .frame(width: 272)
+                    .transition(.move(edge: .leading))
+                Divider()
+            }
+            NavigationStack {
+                detail
+                    .diffCanvasBackground()
+                    .toolbar {
+                        ToolbarItem(placement: .navigation) {
+                            Button {
+                                withAnimation(.snappy) { sidebarVisible.toggle() }
+                            } label: {
+                                Image(systemName: "sidebar.left")
+                            }
+                            .help("Toggle Sidebar")
+                        }
+                    }
+            }
         }
-        .navigationSplitViewStyle(.balanced)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task {
-            model.openFromLaunchArguments()
+            await model.openFromLaunchArguments()
             model.updates.checkOnLaunch()
         }
         .alert("Something went wrong",

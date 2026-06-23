@@ -73,6 +73,7 @@ struct GitChangesetView: View {
                 .id(file.id)
         } else {
             ContentUnavailableView("Select a file", systemImage: "sidebar.left")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

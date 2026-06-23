@@ -39,11 +39,19 @@ struct ImageComparisonView: View {
     private let blinkTimer = Timer.publish(every: 0.55, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        VStack(spacing: 0) {
-            PathBar(a: a, b: b) { toolbar }
-            Divider().opacity(0.4)
-            canvas
-            infoBar
+        // The mode switcher in the PathBar is fixed-size, which otherwise gives this view a
+        // wide hard minimum width. Inside the multi-pane repository layout that minimum would
+        // be forced onto the neighbouring commit / file-list panes, squeezing them. Pinning the
+        // content to the width GeometryReader is offered lets this pane shrink instead (the diff
+        // scales down / the toolbar clips) rather than stealing width from its siblings.
+        GeometryReader { geo in
+            VStack(spacing: 0) {
+                PathBar(a: a, b: b) { toolbar }
+                Divider().opacity(0.4)
+                canvas
+                infoBar
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
         .focusedSceneValue(\.diffCommands, DiffCommandActions(
             setImageMode: { mode = ImageMode(rawValue: $0) ?? mode },
@@ -170,14 +178,19 @@ struct ImageComparisonView: View {
 
     private func load() async {
         loadError = nil
-        aImage = a.loadImage()
-        bImage = b.loadImage()
+        let a = a, b = b
+        // Read the bytes (possibly a git blob) off the main actor; NSImage decodes lazily on draw.
+        // The CoreImage difference is heavy, so it runs off-main too (NSImage carried via Unchecked).
+        let data = await offMain { (try? a.loadData(), try? b.loadData()) }
+        aImage = data.0.flatMap(NSImage.init(data:))
+        bImage = data.1.flatMap(NSImage.init(data:))
         if aImage == nil && bImage == nil {
             loadError = "Neither side could be decoded as an image."
             return
         }
-        if let aImage, let bImage {
-            diffImage = ImageDiffRenderer.difference(aImage, bImage)
+        if let ai = aImage, let bi = bImage {
+            let pair = Unchecked((ai, bi))
+            diffImage = await offMain { Unchecked(ImageDiffRenderer.difference(pair.value.0, pair.value.1)) }.value
         }
     }
 }

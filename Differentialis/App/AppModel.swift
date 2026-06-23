@@ -40,7 +40,7 @@ final class AppModel {
 
     // MARK: - Launch arguments (open files/folders/repo passed on the command line)
 
-    func openFromLaunchArguments() {
+    func openFromLaunchArguments() async {
         guard !didProcessLaunchArguments else { return }
         didProcessLaunchArguments = true
         let fm = FileManager.default
@@ -49,8 +49,10 @@ final class AppModel {
             .map { URL(fileURLWithPath: $0) }
         guard !urls.isEmpty else { return }
 
-        if urls.count == 1, GitRepository.isRepository(urls[0]) {
-            openRepository(at: urls[0])
+        if urls.count == 1 {
+            if await offMain({ GitRepository.isRepository(urls[0]) }) {
+                openRepository(at: urls[0])
+            }
         } else if urls.count >= 3 {
             open(Comparison.merge(base: .file(urls[0]), left: .file(urls[1]), right: .file(urls[2])))
         } else if urls.count >= 2 {
@@ -94,18 +96,27 @@ final class AppModel {
 
     // MARK: - Repository
 
+    // Opening a repository runs several git commands (rev-parse, refs). They are hopped off the
+    // main actor so the sidebar click never blocks the run loop. The route flips once they finish.
     func openRepository(at url: URL) {
-        guard GitRepository.isRepository(url) else {
+        Task { await openRepositoryImpl(at: url) }
+    }
+
+    private func openRepositoryImpl(at url: URL) async {
+        guard await offMain({ GitRepository.isRepository(url) }) else {
             errorMessage = "“\(url.lastPathComponent)” is not a git repository."
             return
         }
         let repository = GitRepository(url: url)
+        let info = await offMain { () -> (name: String, refs: [GitRef], root: URL) in
+            let root = (try? repository.root()) ?? url
+            return (root.lastPathComponent, (try? repository.refs()) ?? [], root)
+        }
         repo = repository
-        repoName = repository.displayName()
-        repoRefs = (try? repository.refs()) ?? []
-        let root = (try? repository.root()) ?? url
-        openRepoPath = root.standardizedFileURL.path
-        projects.record(name: repository.displayName(), url: root)
+        repoName = info.name
+        repoRefs = info.refs
+        openRepoPath = info.root.standardizedFileURL.path
+        projects.record(name: info.name, url: info.root)
         route = .repository
     }
 
@@ -115,46 +126,66 @@ final class AppModel {
 
     func refreshRefs() {
         guard let repo else { return }
-        repoRefs = (try? repo.refs()) ?? []
+        Task {
+            let refs = await offMain { (try? repo.refs()) ?? [] }
+            repoRefs = refs
+        }
     }
 
     // MARK: - Custom comparison
 
     func runCustomComparison(a: CustomSide, b: CustomSide, name: String? = nil) {
         guard let repo else { return }
-        do {
-            let resolved = try repo.customChangeset(a: a, b: b)
-            let title = name ?? "\(a.label) ↔ \(b.label)"
-            openChangeset(OpenChangeset(title: title, subtitle: repoName, repo: repo, resolved: resolved))
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            let outcome = await offMain { () -> (ResolvedChangeset?, String?) in
+                do { return (try repo.customChangeset(a: a, b: b), nil) }
+                catch { return (nil, error.localizedDescription) }
+            }
+            if let resolved = outcome.0 {
+                let title = name ?? "\(a.label) ↔ \(b.label)"
+                openChangeset(OpenChangeset(title: title, subtitle: repoName, repo: repo, resolved: resolved))
+            } else {
+                errorMessage = outcome.1
+            }
         }
     }
 
     func saveCustomComparison(name: String, a: CustomSide, b: CustomSide) {
         guard let repo else { return }
-        let root = (try? repo.root()) ?? repo.url
-        store.add(SavedComparison(name: name, repoPath: root.path, a: a, b: b, createdAt: Date()))
+        Task {
+            let root = await offMain { (try? repo.root()) ?? repo.url }
+            store.add(SavedComparison(name: name, repoPath: root.path, a: a, b: b, createdAt: Date()))
+        }
     }
 
     func openSaved(_ saved: SavedComparison) {
+        Task { await openSavedImpl(saved) }
+    }
+
+    private func openSavedImpl(_ saved: SavedComparison) async {
         let repository = GitRepository(url: saved.repoURL)
-        guard GitRepository.isRepository(saved.repoURL) else {
+        guard await offMain({ GitRepository.isRepository(saved.repoURL) }) else {
             errorMessage = "The repository for “\(saved.name)” could not be found."
             return
         }
+        let info = await offMain { () -> (name: String, refs: [GitRef], root: URL) in
+            let root = (try? repository.root()) ?? saved.repoURL
+            return (root.lastPathComponent, (try? repository.refs()) ?? [], root)
+        }
         repo = repository
-        repoName = repository.displayName()
-        repoRefs = (try? repository.refs()) ?? []
-        let root = (try? repository.root()) ?? saved.repoURL
-        openRepoPath = root.standardizedFileURL.path
-        projects.record(name: repository.displayName(), url: root)
-        do {
-            let resolved = try repository.customChangeset(a: saved.a, b: saved.b)
+        repoName = info.name
+        repoRefs = info.refs
+        openRepoPath = info.root.standardizedFileURL.path
+        projects.record(name: info.name, url: info.root)
+        let outcome = await offMain { () -> (ResolvedChangeset?, String?) in
+            do { return (try repository.customChangeset(a: saved.a, b: saved.b), nil) }
+            catch { return (nil, error.localizedDescription) }
+        }
+        if let resolved = outcome.0 {
             openChangeset(OpenChangeset(title: saved.name, subtitle: saved.repoName,
                                         repo: repository, resolved: resolved))
-        } catch {
-            errorMessage = error.localizedDescription
+        } else {
+            errorMessage = outcome.1
         }
     }
 

@@ -37,7 +37,9 @@ struct CustomComparisonPopover: View {
         .onAppear {
             aCommit = commits.first?.id ?? "HEAD"
             bCommit = commits.first?.id ?? "HEAD"
-            bRef = repo.currentBranch() ?? "HEAD"
+        }
+        .task {
+            bRef = await offMain { repo.currentBranch() ?? "HEAD" }
         }
         .alert("Save comparison", isPresented: $saving) {
             TextField("Name", text: $saveName)
