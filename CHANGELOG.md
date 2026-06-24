@@ -9,6 +9,19 @@ When cutting a release, add a section here and use it as the release notes:
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-06-24
+
+### Added
+- **Right-click a changed file to copy its name or path.** The context menu in the repository /
+  changeset file list and the folder-comparison list offers **Copy Name**, **Copy Path**
+  (repo-relative), and **Copy Full Path**.
+
+### Fixed
+- **Image comparisons no longer get stuck loading for added or deleted files.** When one side of an
+  image comparison doesn't exist (a newly added or a deleted file), the view spun on a loading
+  indicator forever because it waited for both sides to decode. It now renders whichever side is
+  present and shows a clear placeholder explaining the other side is absent.
+
 ## [0.1.5] — 2026-06-23
 
 ### Fixed
@@ -79,7 +92,10 @@ When cutting a release, add a section here and use it as the release notes:
 - Native SwiftUI + Liquid Glass, **zero third-party dependencies**.
 - GitHub Actions release workflow that builds and attaches a drag-to-Applications `.dmg`.
 
-[Unreleased]: https://github.com/yennster/differentialis/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/yennster/differentialis/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/yennster/differentialis/releases/tag/v0.1.6
+[0.1.5]: https://github.com/yennster/differentialis/releases/tag/v0.1.5
+[0.1.4]: https://github.com/yennster/differentialis/releases/tag/v0.1.4
 [0.1.3]: https://github.com/yennster/differentialis/releases/tag/v0.1.3
 [0.1.2]: https://github.com/yennster/differentialis/releases/tag/v0.1.2
 [0.1.1]: https://github.com/yennster/differentialis/releases/tag/v0.1.1
