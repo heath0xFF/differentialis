@@ -241,13 +241,20 @@ struct SplitImageView: View {
     @Binding var fraction: CGFloat
     let zoom: ZoomPanState
 
+    /// Crisp (nearest-neighbour) when the image fills the pane at 100%+, smooth when shrunk.
+    private func interpolation(for image: NSImage, in pane: CGSize) -> Image.Interpolation {
+        let px = image.pixelSize
+        let fit = min(pane.width / max(px.width, 1), pane.height / max(px.height, 1))
+        return fit >= 1 ? .none : .high
+    }
+
     var body: some View {
         GeometryReader { geo in
             let splitX = geo.size.width * fraction
             ZStack(alignment: .topLeading) {
-                Image(nsImage: a).resizable().interpolation(.high).scaledToFit()
+                Image(nsImage: a).resizable().interpolation(interpolation(for: a, in: geo.size)).scaledToFit()
                     .frame(width: geo.size.width, height: geo.size.height)
-                Image(nsImage: b).resizable().interpolation(.high).scaledToFit()
+                Image(nsImage: b).resizable().interpolation(interpolation(for: b, in: geo.size)).scaledToFit()
                     .frame(width: geo.size.width, height: geo.size.height)
                     .mask(alignment: .leading) {
                         Rectangle().frame(width: splitX)

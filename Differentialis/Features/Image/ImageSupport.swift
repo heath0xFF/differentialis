@@ -25,11 +25,19 @@ struct ZoomableImageView: View {
 
     var body: some View {
         GeometryReader { geo in
+            // Fit the image to the pane, then apply zoom by sizing the rendered frame so
+            // SwiftUI re-rasterizes from the source NSImage (scaleEffect would just blow up
+            // the pane-sized bitmap and stay blurry). Use nearest-neighbour when showing the
+            // image at 100% or larger so sharp content — QR codes, pixel art — stays crisp;
+            // fall back to high-quality interpolation only when shrinking.
+            let px = image.pixelSize
+            let fit = min(geo.size.width / max(px.width, 1), geo.size.height / max(px.height, 1))
+            let displayScale = fit * zoom.scale
+            let size = CGSize(width: px.width * displayScale, height: px.height * displayScale)
             Image(nsImage: image)
                 .resizable()
-                .interpolation(.high)
-                .scaledToFit()
-                .scaleEffect(zoom.scale)
+                .interpolation(displayScale >= 1 ? .none : .high)
+                .frame(width: size.width, height: size.height)
                 .offset(zoom.offset)
                 .frame(width: geo.size.width, height: geo.size.height)
                 .contentShape(Rectangle())
