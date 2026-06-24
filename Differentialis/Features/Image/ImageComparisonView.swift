@@ -73,12 +73,59 @@ struct ImageComparisonView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if let single = aImage ?? bImage {
+            // Only one side has an image — an added file (no A) or a deleted file (no B).
+            // Show the side we have rather than spinning forever waiting for both.
+            singleSided(single, presentIsA: aImage != nil)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let loadError {
             ContentUnavailableView("Couldn’t load images", systemImage: "photo.badge.exclamationmark",
                                    description: Text(loadError))
         } else {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    /// Lay the one available image beside a placeholder describing why the other side is absent.
+    private func singleSided(_ image: NSImage, presentIsA: Bool) -> some View {
+        let layout = horizontal ? AnyLayout(HStackLayout(spacing: 1)) : AnyLayout(VStackLayout(spacing: 1))
+        return layout {
+            if presentIsA {
+                ZoomableImageView(image: image, zoom: zoom)
+                divider
+                absentPanel(side: "B")
+            } else {
+                absentPanel(side: "A")
+                divider
+                ZoomableImageView(image: image, zoom: zoom)
+            }
+        }
+    }
+
+    private var divider: some View {
+        Rectangle().fill(.white.opacity(0.12))
+            .frame(width: horizontal ? 1 : nil, height: horizontal ? nil : 1)
+    }
+
+    private func absentPanel(side: String) -> some View {
+        let source = side == "A" ? a : b
+        let isEmpty = { if case .empty = source { return true } else { return false } }()
+        let title = isEmpty ? (side == "A" ? "Added" : "Removed") : "No image"
+        let subtitle = isEmpty
+            ? "This file doesn’t exist on side \(side)"
+            : "Side \(side) couldn’t be decoded as an image"
+        return VStack(spacing: 8) {
+            Image(systemName: side == "A" ? "a.square" : "b.square")
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(.secondary)
+            Text(title).font(.headline)
+            Text(subtitle).font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(CheckerboardBackground())
     }
 
     private func twoUp(_ a: NSImage, _ b: NSImage) -> some View {
