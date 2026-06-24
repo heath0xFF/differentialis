@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct FolderComparisonView: View {
     let a: ComparisonSource
@@ -80,8 +81,28 @@ struct FolderComparisonView: View {
                 Spacer()
             }
             .tag(entry.id)
+            .contextMenu { fileMenu(for: entry) }
         }
         .listStyle(.inset)
+    }
+
+    @ViewBuilder
+    private func fileMenu(for entry: FolderEntry) -> some View {
+        // Resolve the absolute path against whichever side actually contains the file.
+        let root = entry.status == .removed ? aRoot : (bRoot ?? aRoot)
+        Button("Copy Name") { copyToPasteboard(entry.name) }
+        Button("Copy Path") { copyToPasteboard(entry.relativePath) }
+        if let root {
+            Button("Copy Full Path") {
+                copyToPasteboard(root.appendingPathComponent(entry.relativePath).path)
+            }
+        }
+    }
+
+    private func copyToPasteboard(_ string: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(string, forType: .string)
     }
 
     @ViewBuilder

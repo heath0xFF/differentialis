@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// A git changed-files list beside the selected file's diff. Reused by the
 /// repository commit view, custom comparisons, and saved comparisons.
@@ -64,8 +65,24 @@ struct GitChangesetView: View {
                 Spacer()
             }
             .tag(file.id)
+            .contextMenu { fileMenu(for: file) }
         }
         .listStyle(.inset)
+    }
+
+    @ViewBuilder
+    private func fileMenu(for file: GitChangedFile) -> some View {
+        let name = (file.path as NSString).lastPathComponent
+        let fullPath = repo.url.appendingPathComponent(file.path).path
+        Button("Copy Name") { copyToPasteboard(name) }
+        Button("Copy Path") { copyToPasteboard(file.path) }
+        Button("Copy Full Path") { copyToPasteboard(fullPath) }
+    }
+
+    private func copyToPasteboard(_ string: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(string, forType: .string)
     }
 
     @ViewBuilder
