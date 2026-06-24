@@ -7,8 +7,6 @@ All notable changes to Differentialis are documented here. The format follows
 When cutting a release, add a section here and use it as the release notes:
 `gh release create vX.Y.Z --notes "$(scripts/changelog.sh X.Y.Z)"`.
 
-## [Unreleased]
-
 ## [0.1.6] — 2026-06-24
 
 ### Added
