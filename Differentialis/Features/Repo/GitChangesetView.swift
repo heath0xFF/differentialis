@@ -21,13 +21,16 @@ struct GitChangesetView: View {
         } else {
             HSplitView {
                 if listCollapsed {
-                    CollapsedRail { withAnimation(.snappy) { listCollapsed = false } }
+                    CollapsedRail(title: "Files") { withAnimation(.snappy) { listCollapsed = false } }
                 } else {
                     VStack(spacing: 0) {
                         HStack {
+                            Text("Files")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.secondary)
+                            Spacer()
                             Text("\(files.count) file\(files.count == 1 ? "" : "s")")
                                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                            Spacer()
                             Button { withAnimation(.snappy) { listCollapsed = true } } label: {
                                 Image(systemName: "sidebar.left")
                                     .frame(width: 24, height: 22)

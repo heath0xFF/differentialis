@@ -51,7 +51,7 @@ struct RepositoryView: View {
         HSplitView {
             listColumn { commitListContent }
             if changesetFilesCollapsed {
-                CollapsedRail { withAnimation(.snappy) { changesetFilesCollapsed = false } }
+                CollapsedRail(title: "Files") { withAnimation(.snappy) { changesetFilesCollapsed = false } }
             } else {
                 changesetFilesColumn
                     .frame(minWidth: 180, idealWidth: 280, maxWidth: 360, maxHeight: .infinity)
@@ -74,7 +74,7 @@ struct RepositoryView: View {
     @ViewBuilder
     private func listColumn<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         if leftCollapsed {
-            CollapsedRail { withAnimation(.snappy) { leftCollapsed = false } }
+            CollapsedRail(title: leftCollapsedTitle) { withAnimation(.snappy) { leftCollapsed = false } }
         } else {
             VStack(spacing: 0) {
                 leftHeader
@@ -88,6 +88,10 @@ struct RepositoryView: View {
         }
     }
 
+    private var leftCollapsedTitle: String {
+        mode == .commits ? "History" : "Files"
+    }
+
     private var leftHeader: some View {
         HStack(spacing: 8) {
             HStack(spacing: 2) {
@@ -96,6 +100,9 @@ struct RepositoryView: View {
             }
             .padding(2)
             .background(.black.opacity(0.22), in: Capsule())
+            Text(leftCollapsedTitle)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
             Spacer()
             Text(mode == .commits ? "\(commits.count) commits" : "\(filteredWorkingFiles.count) files")
                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
@@ -192,9 +199,12 @@ struct RepositoryView: View {
         let count = changeset?.files.count ?? 0
         return VStack(spacing: 0) {
             HStack {
+                Text("Files")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                Spacer()
                 Text("\(count) file\(count == 1 ? "" : "s")")
                     .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                Spacer()
                 Button { withAnimation(.snappy) { changesetFilesCollapsed = true } } label: {
                     Image(systemName: "sidebar.left")
                         .frame(width: 24, height: 22)

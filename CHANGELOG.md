@@ -27,6 +27,12 @@ When cutting a release, add a section here and use it as the release notes:
   choice carries over to the next comparison and survives app relaunch. The same applies to
   image diff modes (⌘1–⌘4).
 
+### Improved
+- **Collapsible sidebar panels now show their title when collapsed.** The commit-history,
+  changed-files, and changeset-file-list panels display a vertical title (e.g. "HISTORY", "FILES")
+  in the collapsed rail so you can tell at a glance what each rail expands to. The expanded
+  headers now show the same title horizontally.
+
 ## [0.1.6] — 2026-06-24
 
 ### Added
