@@ -35,7 +35,6 @@ final class AppModel {
 
     var errorMessage: String?
     var showShortcuts = false
-
     let store = ComparisonStore()
     let projects = RecentProjectsStore()
     let updates = UpdateChecker()

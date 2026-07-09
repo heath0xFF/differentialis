@@ -20,6 +20,13 @@ When cutting a release, add a section here and use it as the release notes:
   a Viewer for folders and files so LaunchServices routes the paths instead of bouncing them. A
   single non-repository path now shows an in-app error instead of doing nothing.
 
+### Changed
+- **Text layout (Split / Unified) and image comparison mode now persist across files and
+  launches.** Switching to Unified for one file diff used to reset to Split when you opened
+  another file. The layout choice is now a global default stored in UserDefaults — your last
+  choice carries over to the next comparison and survives app relaunch. The same applies to
+  image diff modes (⌘1–⌘4).
+
 ## [0.1.6] — 2026-06-24
 
 ### Added
