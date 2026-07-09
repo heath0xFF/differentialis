@@ -29,6 +29,12 @@ extension View {
     }
 }
 
+extension Animation {
+    /// Shared animation for sidebar/panel collapse and expand — slightly slower than `.snappy`
+    /// so the transition reads as deliberate rather than instantaneous.
+    static let panel: Animation = .snappy(duration: 0.45)
+}
+
 /// Shown in place of a collapsed panel: a thin rail with an expand control at the top and an
 /// optional title rendered vertically (rotated 90°) so the panel's purpose is visible at a glance.
 struct CollapsedRail: View {
@@ -60,17 +66,16 @@ struct CollapsedRail: View {
                 // rotationEffect is render-only — it doesn't change layout bounds. We give the
                 // rotated text a frame whose height equals the text's natural (horizontal) width,
                 // so the vertical glyphs have room and don't overlap the divider/button above.
-                Group {
-                    Spacer()
-                    Text(title.uppercased())
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .fixedSize()
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 34, height: titleWidth)
-                    Spacer()
-                }
-                .frame(maxHeight: .infinity)
+                // Top-aligned: the VStack(alignment: .top) on the outer frame pins it just below
+                // the divider, with Spacer filling the rest.
+                Text(title.uppercased())
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary.opacity(0.7))
+                    .fixedSize()
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 34, height: titleWidth)
+                    .padding(.top, 12)
+                Spacer()
             } else {
                 Spacer()
             }
