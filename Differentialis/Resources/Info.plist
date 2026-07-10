@@ -33,5 +33,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/yennster/differentialis/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>4CPTyeclcSK+OP2J09skgo/PVIjFc5S/beHTnphcjL8=</string>
 </dict>
 </plist>

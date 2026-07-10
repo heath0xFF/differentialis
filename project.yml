@@ -11,6 +11,10 @@ settings:
     MARKETING_VERSION: "0.1.6"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_STRICT_CONCURRENCY: minimal
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.9.3"
 targets:
   Differentialis:
     type: application
@@ -22,6 +26,8 @@ targets:
           - Resources/differentialis
       - path: Differentialis/Resources/differentialis
         buildPhase: resources
+    dependencies:
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.differentialis.Differentialis

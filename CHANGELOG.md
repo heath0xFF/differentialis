@@ -11,6 +11,10 @@ When cutting a release, add a section here and use it as the release notes:
 ## [Unreleased]
 
 ### Added
+- **In-app updates** — Differentialis now downloads, verifies, installs, and relaunches updates
+  itself instead of opening the DMG download page in a browser. The update banner's button
+  ("Update") and **Check for Updates…** both install in place; updates are verified with an
+  EdDSA-signed appcast attached to the latest GitHub release.
 - **`differentialis` command-line launcher.** A thin shell script is bundled inside the app at
   `Contents/Resources/differentialis`; install it from **Differentialis ▸ Install Command Line
   Tool…** (one password prompt, then it's on your `$PATH`). Run `differentialis <repo>`,
@@ -21,6 +25,9 @@ When cutting a release, add a section here and use it as the release notes:
   single non-repository path now shows an in-app error instead of doing nothing.
 
 ### Changed
+- Added **Sparkle** as the app's only third-party dependency, used solely for the self-updater.
+  The diff, merge, and git engines remain dependency-free. Releases now carry a monotonic
+  `CFBundleVersion` and an `appcast.xml` so installed apps can find and verify new versions.
 - **Text layout (Split / Unified) and image comparison mode now persist across files and
   launches.** Switching to Unified for one file diff used to reset to Split when you opened
   another file. The layout choice is now a global default stored in UserDefaults — your last

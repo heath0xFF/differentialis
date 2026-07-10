@@ -19,8 +19,10 @@ struct DifferentialisApp: App {
         .commands {
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") {
-                    Task { await model.updates.check(manual: true) }
+                    model.updater.checkForUpdates()
                 }
+                .disabled(!model.updater.canCheckForUpdates)
+
                 Button(cliInstalled ? "Uninstall Command Line Tool…" : "Install Command Line Tool…") {
                     if cliInstalled {
                         CommandLineToolInstaller.uninstall()

@@ -37,7 +37,7 @@ final class AppModel {
     var showShortcuts = false
     let store = ComparisonStore()
     let projects = RecentProjectsStore()
-    let updates = UpdateChecker()
+    let updater = SparkleUpdater()
     var openRepoPath: String?
     private var didProcessLaunchArguments = false
 
