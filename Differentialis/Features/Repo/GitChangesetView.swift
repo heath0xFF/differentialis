@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// A git changed-files list beside the selected file's diff. Reused by the
 /// repository commit view, custom comparisons, and saved comparisons.
@@ -20,14 +21,18 @@ struct GitChangesetView: View {
         } else {
             HSplitView {
                 if listCollapsed {
-                    CollapsedRail { withAnimation(.snappy) { listCollapsed = false } }
+                    CollapsedRail(title: "Files") { withAnimation(.panel) { listCollapsed = false } }
+                        .transition(.move(edge: .leading).combined(with: .opacity))
                 } else {
                     VStack(spacing: 0) {
                         HStack {
+                            Text("Files")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.primary.opacity(0.7))
+                            Spacer()
                             Text("\(files.count) file\(files.count == 1 ? "" : "s")")
                                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                            Spacer()
-                            Button { withAnimation(.snappy) { listCollapsed = true } } label: {
+                            Button { withAnimation(.panel) { listCollapsed = true } } label: {
                                 Image(systemName: "sidebar.left")
                                     .frame(width: 24, height: 22)
                                     .contentShape(Rectangle())
@@ -39,6 +44,7 @@ struct GitChangesetView: View {
                         fileList
                     }
                     .frame(minWidth: 180, idealWidth: 280, maxWidth: 360)
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 }
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -64,8 +70,24 @@ struct GitChangesetView: View {
                 Spacer()
             }
             .tag(file.id)
+            .contextMenu { fileMenu(for: file) }
         }
         .listStyle(.inset)
+    }
+
+    @ViewBuilder
+    private func fileMenu(for file: GitChangedFile) -> some View {
+        let name = (file.path as NSString).lastPathComponent
+        let fullPath = repo.url.appendingPathComponent(file.path).path
+        Button("Copy Name") { copyToPasteboard(name) }
+        Button("Copy Path") { copyToPasteboard(file.path) }
+        Button("Copy Full Path") { copyToPasteboard(fullPath) }
+    }
+
+    private func copyToPasteboard(_ string: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(string, forType: .string)
     }
 
     @ViewBuilder

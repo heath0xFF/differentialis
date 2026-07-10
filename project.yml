@@ -8,7 +8,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.5"
+    MARKETING_VERSION: "0.1.6"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_STRICT_CONCURRENCY: minimal
 packages:
@@ -21,25 +21,21 @@ targets:
     platform: macOS
     sources:
       - path: Differentialis
+        excludes:
+          - Resources/Info.plist
+          - Resources/differentialis
+      - path: Differentialis/Resources/differentialis
+        buildPhase: resources
     dependencies:
       - package: Sparkle
-    info:
-      path: Differentialis/Info.plist
-      properties:
-        CFBundleDisplayName: Differentialis
-        CFBundleShortVersionString: "$(MARKETING_VERSION)"
-        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
-        LSApplicationCategoryType: public.app-category.developer-tools
-        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
-        NSHumanReadableCopyright: ""
-        # Sparkle self-update: feed lives on the GitHub "latest" release as an
-        # attached asset; the EdDSA public key verifies every downloaded update.
-        SUFeedURL: https://github.com/yennster/differentialis/releases/latest/download/appcast.xml
-        SUPublicEDKey: 4CPTyeclcSK+OP2J09skgo/PVIjFc5S/beHTnphcjL8=
-        SUEnableAutomaticChecks: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.differentialis.Differentialis
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_FILE: Differentialis/Resources/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Differentialis
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_HARDENED_RUNTIME: "NO"
