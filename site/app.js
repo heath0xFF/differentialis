@@ -157,11 +157,13 @@
   onScroll();
 
   /* ----------------------------------------- Latest release (download) */
-  fetch("https://api.github.com/repos/yennster/differentialis/releases/latest", {
+  fetch("https://api.github.com/repos/yennster/differentialis/releases", {
     headers: { Accept: "application/vnd.github+json" },
   })
     .then((r) => (r.ok ? r.json() : Promise.reject()))
-    .then((rel) => {
+    .then((releases) => {
+      if (!Array.isArray(releases) || releases.length === 0) return;
+      const rel = releases.find((r) => (r.assets || []).some((a) => a.name && a.name.endsWith(".dmg"))) || releases[0];
       const tag = rel.tag_name || "v0.1.1";
       const dmg = (rel.assets || []).find((a) => a.name && a.name.endsWith(".dmg"));
       const url = dmg ? dmg.browser_download_url : rel.html_url;
